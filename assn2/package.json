@@ -12,6 +12,7 @@
     "author": "Carlos Corral-Williams",
     "license": "ISC",
     "dependencies": {
+        "inquirer": "^9.1.2",
         "prompt-sync": "^4.2.0"
     }
 }
