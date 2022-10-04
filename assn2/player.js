@@ -28,7 +28,7 @@ export class Player {
         const ans = await inquirer.prompt({
             name: 'move',
             type: 'list',
-            message: `${this.name} Chose Your Move.`,
+            message: `Player${this.turn}, ${this.name}, Choose the row you wish to place a token.`,
             choices: moves
             }
         )
