@@ -21,7 +21,11 @@ export const start = async (board, player1, player2) => {
         await board.place(activePlayer)
         board.printBoard()
         // Check for a winner
-        if (board.checkWin(activePlayer)) {
+        if (board.checkWin(activePlayer)==1) {
+            console.log(`${activePlayer.name} won!`)
+            return
+        }
+        if (board.checkWin(activePlayer)==2) {
             console.log(`${activePlayer.name} won!`)
             return
         }
