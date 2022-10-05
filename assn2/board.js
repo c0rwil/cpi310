@@ -1,5 +1,8 @@
-// TODO construct connect 4 board
-import { Player } from "./player.js"
+/*
+Author: Carlos Corral-Williams
+Date: 10/3/2022
+Description: connect 4 game | assignment2
+*/
 export class Board{
     constructor(){
         this.table = [
@@ -14,14 +17,18 @@ export class Board{
     }
 
     async place(player) {
-        const position = await player.move(this)
-        if (this.table[position] == 0) {
-            this.table[position] = player.turn
+        let position = await player.move(this)
+        let counter = 5
+        while(this.table[position+(7*counter)]!=0){
+            counter--
+        }
+        if(this.table[position+(7*counter)]==0) {
+            this.table[position + (7 * counter)] = player.turn
             return true
         }
         console.log('column already full, choose a different spot')
-        return false
     }
+
     printBoard(){
         const arr = []
         for (let i = 0; i < 6; i++) {
