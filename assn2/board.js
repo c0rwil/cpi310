@@ -14,6 +14,8 @@ export class Board{
             0,0,0,0,0,0,0
             ]
         this.symbols=['-','1','2']
+        this.rows = 6
+        this.columns = 7
     }
 
     async place(player) {
@@ -22,9 +24,10 @@ export class Board{
         while(this.table[position+(7*counter)]!=0){
             counter--
         }
+        console.log("\n"+position)
         if(this.table[position+(7*counter)]==0) {
             this.table[position + (7 * counter)] = player.turn
-            return counter
+            return position
         }
         console.log('column already full, choose a different spot')
     }
@@ -43,95 +46,89 @@ export class Board{
         console.log("| 1 | 2 | 3 | 4 | 5 | 6 | 7 |")
     }
 
-    checkWin(player) {
-        const two_d_array =[]
-        while(this.table.length) two_d_array.push(this.table.splice(0,7))
-        console.log(two_d_array)
-        function whoWon(two_d_array) {
-            let p1 =0
-            let p2 = 0
-            //check rows
-            for(let i = 0; i <= 5; i++){
-                for(let j = 0; j <=6; j++){
-                    // console.log(two_d_array[i][j])
-                    if (two_d_array[i][j] == 0) {
-                        p1 = 0;
-                        p2 = 0;
-                    } else if (two_d_array[i][j] == 1) {
-                        ++p1;
-                        p2 = 0;
-                    } else if (two_d_array[i][j] == 2) {
-                        p1 = 0;
-                        ++p2
-                    }
-                    if (p1 == 4) {
-                        return 1;
-                    } else if (p2 == 4) {
-                        return 2;
-                    }
-                }
-                p1 = 0;
-                p2 = 0;
-            }
+    checkWin(player,col) {
+        this.two_d_array =[]
+        while(this.table.length) this.two_d_array.push(this.table.splice(0,7))
+        console.log(this.two_d_array)
+        this.rows = 6
+        this.columns = 7
+        return 0
+    }
 
-            // // check columns
-            // for (let i = 0; i < 6; i++) {
-            //     for (let j = 0; j < 5; j++) {
-            //         console.log(two_d_array[i][j])
-            //         if (two_d_array[i][j] == 0) {
-            //             p1 = 0;
-            //             p2 = 0;
-            //         } else if (two_d_array[i][j] == 1) {
-            //             ++p1;
-            //             p2 = 0;
-            //         } else if (two_d_array[i][j] == 2) {
-            //             p1 = 0;
-            //             ++p2;
-            //         }
-            //         if (p1 == 4) {
-            //             return 1;
-            //         } else if (p2 == 4) {
-            //             return 2;
-            //         }
-            //     }
-            //     p1 = 0;
-            //     p2 = 0;
-            // }
+    horizontal(two_d_array,col) {
+        let count = 1
 
-            // // check diagonal. left to right
-            // for (let j = 0; j < 3; j++) {
-            //     for (let i = 0; i < 4; i++) {
-            //         console.log(two_d_array[i][j])
-            //         console.log(two_d_array[i][j])
-            //         if (two_d_array[i][j] == two_d_array[i+1][j+1]
-            //             && two_d_array[i][j] == two_d_array[i+2][j+2]
-            //             && two_d_array[i][j] == two_d_array[i+3][j+3]) {
-            //             if (two_d_array[i][j] == 1) {
-            //                 return 1;
-            //             } else if (two_d_array[i][j] == 2) {
-            //                 return 2;
-            //             }
-            //         }
-            //     }
-            // }
-            //
-            // // loop on diagonals right to left
-            // for (let j = 0; j < 3; j++) {
-            //     for (let i = 6; i >= 3; i--) {
-            //         if (two_d_array[i][j] == two_d_array[i-1][j+1]
-            //             && two_d_array[i][j] == two_d_array[i-2][j+2]
-            //             && two_d_array[i][j] == two_d_array[i-3][j+3])
-            //         {
-            //             if (two_d_array[i][j] == 1) {
-            //                 return 1;
-            //             } else if (two_d_array[i][j] == 2) {
-            //                 return 2;
-            //             }
-            //         }
-            //     }
-            // }
-
+        for (let i =1 ; i < 6; i++) {
+            if (two_d_array[i][col] != player.symbol)
+                break
+            count ++
         }
-        return whoWon(two_d_array)
+        // for (let i=  = i + 1; i >= 0; rowIndex --) {
+        //     if (this.board[rowIndex][column] != symbol)
+        //         break
+        //
+        //     count ++
+        // }
+        return count >= 4
+
+
+
+        // // check columns
+        // for (let i = 0; i < 6; i++) {
+        //     for (let j = 0; j < 5; j++) {
+        //         console.log(two_d_array[i][j])
+        //         if (two_d_array[i][j] == 0) {
+        //             p1 = 0;
+        //             p2 = 0;
+        //         } else if (two_d_array[i][j] == 1) {
+        //             ++p1;
+        //             p2 = 0;
+        //         } else if (two_d_array[i][j] == 2) {
+        //             p1 = 0;
+        //             ++p2;
+        //         }
+        //         if (p1 == 4) {
+        //             return 1;
+        //         } else if (p2 == 4) {
+        //             return 2;
+        //         }
+        //     }
+        //     p1 = 0;
+        //     p2 = 0;
+        // }
+
+        // // check diagonal. left to right
+        // for (let j = 0; j < 3; j++) {
+        //     for (let i = 0; i < 4; i++) {
+        //         console.log(two_d_array[i][j])
+        //         console.log(two_d_array[i][j])
+        //         if (two_d_array[i][j] == two_d_array[i+1][j+1]
+        //             && two_d_array[i][j] == two_d_array[i+2][j+2]
+        //             && two_d_array[i][j] == two_d_array[i+3][j+3]) {
+        //             if (two_d_array[i][j] == 1) {
+        //                 return 1;
+        //             } else if (two_d_array[i][j] == 2) {
+        //                 return 2;
+        //             }
+        //         }
+        //     }
+        // }
+        //
+        // // loop on diagonals right to left
+        // for (let j = 0; j < 3; j++) {
+        //     for (let i = 6; i >= 3; i--) {
+        //         if (two_d_array[i][j] == two_d_array[i-1][j+1]
+        //             && two_d_array[i][j] == two_d_array[i-2][j+2]
+        //             && two_d_array[i][j] == two_d_array[i-3][j+3])
+        //         {
+        //             if (two_d_array[i][j] == 1) {
+        //                 return 1;
+        //             } else if (two_d_array[i][j] == 2) {
+        //                 return 2;
+        //             }
+        //         }
+        //     }
+        // }
+
     }
 }

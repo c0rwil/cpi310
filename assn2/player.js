@@ -12,6 +12,8 @@ export class Player {
     constructor(turn){
         this.turn = turn
         this.name = 'Player ${turn}'
+        if(this.turn==1){this.symbol="1"}
+        else{this.symbol="2"}
     }
 
     async init(){

@@ -20,15 +20,17 @@ export const start = async (board, player1, player2) => {
         const activePlayer = (turn % 2 + 1 === 1) ? player1 : player2
         await board.place(activePlayer)
         board.printBoard()
+        if(board.checkWin(activePlayer))
+            return console.log("${activePlayer.name} won!")
         // Check for a winner
-        if (board.checkWin(activePlayer)==1) {
-            console.log(`${activePlayer.name} won!`)
-            return
-        }
-        if (board.checkWin(activePlayer)==2) {
-            console.log(`${activePlayer.name} won!`)
-            return
-        }
+        // if (board.checkWin(activePlayer)==1) {
+        //     console.log(`${activePlayer.name} won!`)
+        //     return
+        // }
+        // if (board.checkWin(activePlayer)==2) {
+        //     console.log(`${activePlayer.name} won!`)
+        //     return
+        // }
         turn++
     }
     console.log('Draw!')
