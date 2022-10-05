@@ -51,22 +51,18 @@ export class Board{
         function whoWon(two_d_array) {
             let p1 =0
             let p2 = 0
-            let tie = 0
-
             //check rows
-            for(let i = 0; i < 6; ++i){
-                for(let j = 0; j <7; ++j){
+            for(let i = 0; i < 6; i++){
+                for(let j = 0; j <7; j++){
                     if (two_d_array[i][j] == 0) {
                         p1 = 0;
                         p2 = 0;
                     } else if (two_d_array[i][j] == 1) {
-                        ++p1;
+                        p1++;
                         p2 = 0;
-                        ++tie;
                     } else if (two_d_array[i][j] == 2) {
                         p1 = 0;
-                        ++p2;
-                        ++tie;
+                        p2++
                     }
                     if (p1 == 4) {
                         return 1;
@@ -77,13 +73,10 @@ export class Board{
                 p1 = 0;
                 p2 = 0;
             }
-            if (tie == 42) {
-                return 0;
-            }
 
             // check columns
-            for (let i = 0; i < 6; ++i) {
-                for (let j = 0; j < 5; ++j) {
+            for (let i = 0; i < 6; i++) {
+                for (let j = 0; j < 5; j++) {
                     console.log(two_d_array[i][j])
                     if (two_d_array[i][j] == 0) {
                         p1 = 0;
@@ -106,8 +99,8 @@ export class Board{
             }
 
             // check diagonal. left to right
-            for (let j = 0; j < 3; ++j) {
-                for (let i = 0; i < 4; ++i) {
+            for (let j = 0; j < 3; j++) {
+                for (let i = 0; i < 4; i++) {
                     if (two_d_array[i][j] == two_d_array[i+1][j+1]
                         && two_d_array[i][j] == two_d_array[i+2][j+2]
                         && two_d_array[i][j] == two_d_array[i+3][j+3]) {
@@ -121,8 +114,8 @@ export class Board{
             }
 
             // loop on diagonals right to left
-            for (let j = 0; j < 3; ++j) {
-                for (let i = 6; i >= 3; --i) {
+            for (let j = 0; j < 3; j++) {
+                for (let i = 6; i >= 3; i--) {
                     if (two_d_array[i][j] == two_d_array[i-1][j+1]
                         && two_d_array[i][j] == two_d_array[i-2][j+2]
                         && two_d_array[i][j] == two_d_array[i-3][j+3])
