@@ -12,6 +12,8 @@ export class Player {
     constructor(turn){
         this.turn = turn
         this.name = 'Player ${turn}'
+        if(turn==1){this.symbol="1"}
+        else{this.symbol="2"}
     }
 
     async init(){
@@ -31,7 +33,7 @@ export class Player {
         const reply = await inquirer.prompt({
             name: 'move',
             type: 'list',
-            message: `Player${this.turn}, ${this.name}, Choose the row you wish to place a token.`,
+            message: `Player${this.turn}, ${this.name}, Choose the col you wish to place a token.`,
             choices: moves
             }
         )
