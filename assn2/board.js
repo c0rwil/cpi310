@@ -3,132 +3,120 @@ Author: Carlos Corral-Williams
 Date: 10/3/2022
 Description: connect 4 game | assignment2
 */
+// board class, has table and tracks various things for the sake of connect 4
 export class Board{
     constructor(){
-        this.table = [
-            0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0,
-            0,0,0,0,0,0,0
-            ]
-        this.symbols=['-','1','2']
         this.rows = 6
-        this.columns = 7
+        this.cols = 7
+        this.movesLeft = this.rows*this.cols
+        this.tableMaker(this.rows,this.cols)
+        this.tracker = new Array(this.cols).fill(this.rows-1)
+    }
+    // generator for table
+    tableMaker(row,col){
+        this.table = new Array(row)
+        for (let i = 0; i < row; i++)
+        {
+            this.table[i]= new Array(col).fill('-')
+        }
+    }
+    // tracks moves left and places symbol
+    place(col, symbol) {
+        let rowTrack = this.tracker[col]
+        this.tracker[col]=this.tracker[col]-1
+        this.table[rowTrack][col] = symbol
+        this.movesLeft -= 1
+    }
+    // when moves have run out return true
+    noMovesLeft(){
+        return this.movesLeft <= 0;
     }
 
-    async place(player) {
-        let position = await player.move(this)
-        let counter = 5
-        while(this.table[position+(7*counter)]!=0){
-            counter--
-        }
-        console.log("\n"+position)
-        if(this.table[position+(7*counter)]==0) {
-            this.table[position + (7 * counter)] = player.turn
-            return position
-        }
-        console.log('column already full, choose a different spot')
+    // when capacity is reached return true
+    colCap(colPosition){
+        return this.tracker[colPosition] <= -1;
     }
 
+    // displays the table
     printBoard(){
-        const arr = []
-        for (let i = 0; i < 6; i++) {
-            let row = []
-            for (let j = 0; j < 7; j++) {
-                row.push(this.symbols[this.table[i * 7 + j]])
-            }
-            arr.push('| '+row.join(' | ')+' |')
+        for(let i = 0; i < this.rows; i++){
+            console.log("| " + this.table[i].join(' ')+ " |")
         }
-        console.log("-----------------------------")
-        console.log(arr.join('\n') + '\n' +"-----------------------------")
-        console.log("| 1 | 2 | 3 | 4 | 5 | 6 | 7 |")
+        console.log("-----------------")
+        console.log("| 1|2|3|4|5|6|7 |")
+        console.log("-----------------")
     }
-
-    checkWin(player,col) {
-        this.two_d_array =[]
-        while(this.table.length) this.two_d_array.push(this.table.splice(0,7))
-        console.log(this.two_d_array)
-        this.rows = 6
-        this.columns = 7
-        return 0
+    // checks for victory in horizontal, vertical, and diagonal plane
+    checkFour(playerCol) {
+        let rowIndex = this.tracker[playerCol]+1
+        let symbol = this.table[rowIndex][playerCol]
+        return this.checkFlat(symbol,rowIndex,playerCol)||this.checkTall(symbol,rowIndex,playerCol)|| this.checkSlant(symbol,rowIndex,playerCol)
     }
-
-    horizontal(two_d_array,col) {
-        let count = 1
-
-        for (let i =1 ; i < 6; i++) {
-            if (two_d_array[i][col] != player.symbol)
+    // checks for horizontal win
+    checkFlat(symbol,row,col)
+    {
+        let ct = 1
+        for (let i = row +1; i<this.rows; i++){
+            if(this.table[i][col]!=symbol)
+            {break}
+            ct++
+        }
+        for (let i = row-1; i>=0; i--){
+            if(this.table[i][col]!=symbol){
                 break
-            count ++
+            }
+            ct++
         }
-        // for (let i=  = i + 1; i >= 0; rowIndex --) {
-        //     if (this.board[rowIndex][column] != symbol)
-        //         break
-        //
-        //     count ++
-        // }
-        return count >= 4
+        return ct >= 4;
+    }
 
+    // checks for vertical victory
+    checkTall(symbol,row,col){
+        let ct = 1
+        for(let i = col + 1; i < this.cols; i++){
+            if(this.table[row][i] != symbol)
+                break
+            ct++
+        }
+        for(let i = col - 1; i>=0; i--){
+            if(this.table[row][i]!=symbol)
+                break
+            ct++
+        }
+        return ct >= 4;
+    }
 
-
-        // // check columns
-        // for (let i = 0; i < 6; i++) {
-        //     for (let j = 0; j < 5; j++) {
-        //         console.log(two_d_array[i][j])
-        //         if (two_d_array[i][j] == 0) {
-        //             p1 = 0;
-        //             p2 = 0;
-        //         } else if (two_d_array[i][j] == 1) {
-        //             ++p1;
-        //             p2 = 0;
-        //         } else if (two_d_array[i][j] == 2) {
-        //             p1 = 0;
-        //             ++p2;
-        //         }
-        //         if (p1 == 4) {
-        //             return 1;
-        //         } else if (p2 == 4) {
-        //             return 2;
-        //         }
-        //     }
-        //     p1 = 0;
-        //     p2 = 0;
-        // }
-
-        // // check diagonal. left to right
-        // for (let j = 0; j < 3; j++) {
-        //     for (let i = 0; i < 4; i++) {
-        //         console.log(two_d_array[i][j])
-        //         console.log(two_d_array[i][j])
-        //         if (two_d_array[i][j] == two_d_array[i+1][j+1]
-        //             && two_d_array[i][j] == two_d_array[i+2][j+2]
-        //             && two_d_array[i][j] == two_d_array[i+3][j+3]) {
-        //             if (two_d_array[i][j] == 1) {
-        //                 return 1;
-        //             } else if (two_d_array[i][j] == 2) {
-        //                 return 2;
-        //             }
-        //         }
-        //     }
-        // }
-        //
-        // // loop on diagonals right to left
-        // for (let j = 0; j < 3; j++) {
-        //     for (let i = 6; i >= 3; i--) {
-        //         if (two_d_array[i][j] == two_d_array[i-1][j+1]
-        //             && two_d_array[i][j] == two_d_array[i-2][j+2]
-        //             && two_d_array[i][j] == two_d_array[i-3][j+3])
-        //         {
-        //             if (two_d_array[i][j] == 1) {
-        //                 return 1;
-        //             } else if (two_d_array[i][j] == 2) {
-        //                 return 2;
-        //             }
-        //         }
-        //     }
-        // }
-
+    // checks for diagonal victories
+    checkSlant(symbol,row,col) {
+        let ct = 1
+        //up and left
+        for (let i = col - 1, z = row - 1; i >= 0, z >= 0; i--, z--) {
+            if (this.table[z][i] != symbol)
+                break
+            ct++
+        }
+        // down and right
+        for (let i = col + 1, z = row + 1; i < this.cols, z < this.rows; i++, z++) {
+            if (this.table[z][i] != symbol)
+                break
+            ct++
+        }
+        if (ct >= 4) {
+            return true
+        }
+        ct = 1
+        // up and right
+        for (let i = col + 1, z = row - 1; i < this.cols, z >= 0; i++, z--) {
+            if (this.table[z][i] != symbol)
+                break
+            ct++
+        }
+        // down to left
+        for (let i = col - 1, z = row + 1; i >= 0, z < this.rows; i--, z++) {
+            if (this.table[z][i] != symbol)
+                break
+            ct++
+        }
+        return ct >= 4;
     }
 }
