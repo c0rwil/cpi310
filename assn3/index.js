@@ -20,19 +20,21 @@ let db = new sqlite3.Database("./database/todolist.sqlite",(err)=>{
 function login(){}
 
 
-function create_account(){
+async function create_account(){
     console.log("Creating a new account");
     let user_name = prompt("Enter a username: ");
-    let query_check = "SELECT username FROM users WHERE username=${user_name};";
-    let res = query_promise_single(query_check);
-    if(res.length>0){
+    let query_check = (`SELECT * FROM users WHERE username=${user_name}`);
+    let res = await query_promise_single(query_check)
+    res.user_id = undefined;
+    console.log(res.username);
+    if(res.username==user_name){
         console.log("Name already exists");
         start();
     }
     else{
-        let query = "INSERT into users(username) values(?)";
-        let x = add_query_promise(query,user_name);
-        let userid = db.run("SELECT user_id FROM users WHERE username=${username};")
+        let query = ("INSERT into users(username) values(?)");
+        let res1 = await add_query_promise(query,user_name);
+        let userid = res.user_id
         console.log("Creating account...");
         return userid;
     }
@@ -98,10 +100,10 @@ async function main(){
     switch(response){
         case '1':
             console.log("login");
-            login();
+            await login();
             break
         case '2':
-            create_account();
+            await create_account();
             break
         case '3':
             console.log("exiting");
