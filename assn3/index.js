@@ -22,7 +22,20 @@ function login(){}
 
 function create_account(){
     console.log("Creating a new account");
-    let username = prompt("Enter a username: ")
+    let user_name = prompt("Enter a username: ");
+    let query_check = "SELECT * FROM users;";
+    let res = query_promise_single(query_check);
+    if(res.length>0){
+        console.log("Name already exists");
+        start();
+    }
+    else{
+        let query = "INSERT into users(username) values(?)";
+        let value = user_name;
+        let x = add_query_promise(query,value);
+        let userid = "SELECT user_id FROM users WHERE user_id="
+        console.log("Creating account...");
+    }
 
 }
 
@@ -50,7 +63,9 @@ function query_promise_all(query){
         })
     })
 }
-
+function insert_query(){
+    let insert_Q="";
+}
 function add_query_promise(query,values){
     return new Promise((resolve,reject)=>{
         db.run(query,values,(err)=>{
