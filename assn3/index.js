@@ -36,7 +36,7 @@ async function login(){
     let users_id = await query_promise_single(query);
     let user_id = users_id["user_id"];
     console.log(users_id["user_id"]);
-    todo_menu(user_id);
+    await todo_menu(user_id);
 }
 
 
@@ -60,10 +60,10 @@ async function create_account(){
     let users_id = await query_promise_single(query);
     let user_id = users_id["user_id"];
     console.log(users_id["user_id"]);
-    todo_menu(user_id);
+    await todo_menu(user_id);
 }
 
-function todo_menu(user_id){
+async function todo_menu(user_id){
     let div = chalk.cyanBright("==================================================");
     console.log(div)
     console.log(`${user_id}`);
@@ -99,6 +99,7 @@ function query_promise_all(query){
 function insert_query(){
     let insert_Q="";
 }
+
 function add_query_promise(query, values){
     return new Promise((resolve, reject)=>{
         db.run(query,values,(err)=>{
@@ -130,6 +131,7 @@ async function main(){
         let query1 = chalk.cyanBright("Choose a valid menu option: ", response, " not within valid range.");
         response = prompt(query1);
     }
+
     switch(response){
         case '1':
             console.log(chalk.cyanBright("login"));
@@ -143,8 +145,5 @@ async function main(){
             console.log(chalk.cyanBright("exiting"));
             return
     }
-  // let rows = await query_promise_single("SELECT * FROM film;")
-  //   for(let row of rows)
-  //       console.log(row);
 }
 main();
