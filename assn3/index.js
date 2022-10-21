@@ -89,15 +89,12 @@ async function todo_menu(user_id){
     // switch case
     switch(menu_choice){
         case '0':
-            console.log(chalk.cyanBright("login"));
-            await login()
-            break
+            console.log(chalk.red("Logging out and exiting..."));
+            return;
         case '1':
-            console.log(chalk.cyanBright("creating new user"))
-            await create_account();
+            console.log(chalk.cyanBright("Listing ALL tasks..."));
             break
         case '2':
-            console.log(chalk.cyanBright("exiting"));
             return
         case '3':
             return
