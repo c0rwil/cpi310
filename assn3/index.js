@@ -11,6 +11,7 @@ import chalk from 'chalk';
 
 // constant
 const prompt = prompt_sync({sigint:true})
+const div = chalk.cyanBright("==================================================");
 
 //database
 let db = new sqlite3.Database("./database/todolist.sqlite",(err)=>{
@@ -20,7 +21,6 @@ let db = new sqlite3.Database("./database/todolist.sqlite",(err)=>{
 
 // helper functions
 async function login(){
-    let div = chalk.cyanBright("==================================================");
     console.log(div);
     let ask = chalk.cyanBright("Enter your username to log in: ");
     let user_name = prompt(ask);
@@ -29,7 +29,7 @@ async function login(){
         console.log(chalk.cyanBright("Logged in successfully..."));
         console.log(chalk.cyanBright(`Welcome '${user_name}'`));
     }).catch(()=>{
-        console.log(chalk.cyanBright("Account does not exist"));
+        console.log(chalk.red("Account does not exist"));
         console.log(div);
         main();
     });
@@ -41,7 +41,6 @@ async function login(){
 
 
 async function create_account(){
-    let div = chalk.cyanBright("==================================================");
     console.log(div);
     console.log(chalk.cyanBright("Create a new account..."));
     let ask = chalk.cyanBright("Enter a username: ")
@@ -63,27 +62,61 @@ async function create_account(){
     await todo_menu(user_id);
 }
 
+
 async function todo_menu(user_id){
     // menu
-    let div = chalk.cyanBright("==================================================");
     console.log(div);
     console.log(chalk.cyanBright("TODO Menu"));
     console.log(chalk.cyanBright("1. See all tasks"));
     console.log(chalk.cyanBright("2. See incomplete tasks"));
     console.log(chalk.cyanBright("3. See complete tasks"));
     console.log(chalk.cyanBright("4. Add a task"));
-    console.log(chalk.cyanBright("5. Set a task as complete"))
-    console.log(chalk.cyanBright("0. Log out and exit"))
+    console.log(chalk.cyanBright("5. Set a task as complete"));
+    console.log(chalk.cyanBright("0. Log out and exit"));
 
     // input
-    let ask = chalk.cyanBright("Enter a menu option: ")
-    let menu_choice = prompt(ask)
-
+    let ask = chalk.cyanBright("Enter a menu option: ");
+    let menu_choice = prompt(ask);
+    console.log(menu_choice)
     // validate input
-    if(Number(menu_choice) >= 0 || Number(menu_choice <= 5))
+    if(Number(menu_choice) < 0 || Number(menu_choice > 5))
     {
         let query1 = chalk.cyanBright("Choose a valid menu option: ", menu_choice, " not within valid range.");
         menu_choice = prompt(query1);
+    }
+
+    //TODO fix this tomorrow, not returning correctly, after complete last 3 functions and submit.
+    async function to_do_get_all(user) {
+        console.log(div);
+        console.log(chalk.cyanBright("Task list: "));
+        console.log(`'${user}'`)
+        let query = `SELECT * FROM tasks WHERE user_id=${user}`;
+        let res = await query_promise_single(query).then(() => {
+            console.log("i went into the success")
+                let res_id = res["task_id"];
+                let res_complete;
+                let res_description = res["task_desc"];
+                if (Number(res["is_complete"]) === 1) {
+                    res_complete = "YES";
+                } else {
+                    res_complete = "NO";
+                }
+                console.log(`TASK #${res_id} ${res_description} -- DONE: ${res_complete} `);
+        }).catch(() => {
+            console.log(chalk.red("!!! NO TASKS IN LIST !!!"));
+            console.log(chalk.yellow("Add a task?"));
+        });
+    }
+
+    async function to_do_add(user){
+        console.log(div);
+        console.log(chalk.cyanBright("Adding a new task..."));
+        let ask = chalk.cyanBright("Enter the description for the task: ")
+        let description = prompt(ask);
+        let query_insert = ("INSERT into tasks(user_id,task_desc,is_complete) values(?,?,?)");
+        await add_query_promise(query_insert,[user,description,false]);
+        console.log(chalk.cyanBright("Task added..."));
+        console.log(div);
     }
 
     // switch case
@@ -94,17 +127,28 @@ async function todo_menu(user_id){
         case '1':
             console.log(chalk.cyanBright("Listing ALL tasks..."));
             await to_do_get_all(user_id);
+            await todo_menu(user_id);
             break;
         case '2':
+            console.log(chalk.cyanBright("Listing INCOMPLETE tasks..."));
             await to_do_get_incomplete(user_id);
-            return;
+            await todo_menu(user_id);
+            break;
         case '3':
+            console.log(chalk.cyanBright("Listing COMPLETE tasks..."));
             await to_do_get_complete(user_id);
-            return;
+            await todo_menu(user_id);
+            break;
         case '4':
-            return
+            console.log(chalk.cyanBright("Adding task..."));
+            await to_do_add(user_id);
+            await todo_menu(user_id);
+            break;
         case '5':
-            return
+            console.log(chalk.cyanBright("Marking task as complete..."));
+            await to_do_complete(user_id);
+            await todo_menu();
+            break;
     }
 }
 
@@ -115,7 +159,7 @@ function query_promise_single(query){
             if(err){
                 reject(err.message);
             }
-            if(rows == undefined || rows.length==0){
+            if(rows == undefined || rows.length == 0){
                 reject(rows);
             }
             resolve(rows);
@@ -124,19 +168,18 @@ function query_promise_single(query){
 }
 function query_promise_all(query){
     return new Promise( (resolve, reject) => {
-        db.all(query,  (err,rows) => {
+        db.all(query,(err,rows) => {
             if(err){
                 reject(err.message);
             }
             if(rows==undefined || rows.length == 0) {
                 reject(rows);
             }
+            resolve(rows);
         })
     })
 }
-function insert_query(){
-    let insert_Q="";
-}
+
 
 function add_query_promise(query, values){
     return new Promise((resolve, reject)=>{
@@ -152,7 +195,7 @@ function add_query_promise(query, values){
 
 
 function start(){
-    console.log(chalk.cyanBright("================================================"));
+    console.log(chalk.cyanBright("=================================================="));
     console.log(chalk.cyanBright("Welcome to CPI310 Assignment 3: TODO List"));
     console.log(chalk.cyanBright("1. Log in"));
     console.log(chalk.cyanBright("2. Create an account"));
