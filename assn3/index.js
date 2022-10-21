@@ -64,10 +64,48 @@ async function create_account(){
 }
 
 async function todo_menu(user_id){
+    // menu
     let div = chalk.cyanBright("==================================================");
-    console.log(div)
-    console.log(`${user_id}`);
-    main();
+    console.log(div);
+    console.log(chalk.cyanBright("TODO Menu"));
+    console.log(chalk.cyanBright("1. See all tasks"));
+    console.log(chalk.cyanBright("2. See incomplete tasks"));
+    console.log(chalk.cyanBright("3. See complete tasks"));
+    console.log(chalk.cyanBright("4. Add a task"));
+    console.log(chalk.cyanBright("5. Set a task as complete"))
+    console.log(chalk.cyanBright("0. Log out and exit"))
+
+    // input
+    let ask = chalk.cyanBright("Enter a menu option: ")
+    let menu_choice = prompt(ask)
+
+    // validate input
+    if(Number(menu_choice) >= 0 || Number(menu_choice <= 5))
+    {
+        let query1 = chalk.cyanBright("Choose a valid menu option: ", menu_choice, " not within valid range.");
+        menu_choice = prompt(query1);
+    }
+
+    // switch case
+    switch(menu_choice){
+        case '0':
+            console.log(chalk.cyanBright("login"));
+            await login()
+            break
+        case '1':
+            console.log(chalk.cyanBright("creating new user"))
+            await create_account();
+            break
+        case '2':
+            console.log(chalk.cyanBright("exiting"));
+            return
+        case '3':
+            return
+        case '4':
+            return
+        case '5':
+            return
+    }
 }
 
 
