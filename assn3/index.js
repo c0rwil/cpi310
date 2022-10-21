@@ -93,11 +93,14 @@ async function todo_menu(user_id){
             return;
         case '1':
             console.log(chalk.cyanBright("Listing ALL tasks..."));
-            break
+            await to_do_get_all(user_id);
+            break;
         case '2':
-            return
+            await to_do_get_incomplete(user_id);
+            return;
         case '3':
-            return
+            await to_do_get_complete(user_id);
+            return;
         case '4':
             return
         case '5':
