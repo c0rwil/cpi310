@@ -7,11 +7,10 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Actor: {{first_name}} {{last_name}}</h1>
-    <ul>
-        {{#films}}
-        <li><b>{{title}}</b> "{{description}}"</li>
-        {{/films}}
-    </ul>
+    <form action="/get_actor" method="post">
+        <label>Actor Last Name:</label>
+        <input type="text" name = "actor" placeholder="last name"/>
+        <input type="submit"/>
+    </form>
 </body>
 </html>
