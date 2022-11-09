@@ -98,7 +98,7 @@ app.post("/create_account",async(req,res)=>{
 })
 // adds a task for a given user when logged in
 app.post("/add_task",async (req,res) => {
-    let task_info = req.body.taskDescription;
+    let task_info = req.body.task_desc;
     const db = await dbPromise;
     let queryUsers= `SELECT user_id from users WHERE username = "${req.cookies.username}"`
     let ID = await db.get(queryUsers);
