@@ -1,0 +1,19 @@
+<h1>ToDo List</h1>
+<ul>
+    {{#each tasks}}
+        <li style="font-style:italic">{{tasks_id}}: {{task_desc}} {{is_complete}}</li>
+    {{/each}}
+</ul>
+<form action="/add_task" method="post">
+    <label>
+        task description
+        <input type="text" id="taskDescription" name="taskDescription" />
+    </label>
+    <button type="submit"> create</button>
+</form>
+<!--<form action="/login" method="post">-->
+<!--    <label>Welcome to express to-do:</label>-->
+<!--    <input type="text" name = "username" placeholder="user name"/>-->
+<!--    <input type="submit"/>-->
+<!--</form>-->
+<a href="/logout"> logout</a>
