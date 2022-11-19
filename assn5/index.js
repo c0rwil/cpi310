@@ -4,6 +4,7 @@ import sqlite3 from 'sqlite3';
 import sqlite from 'sqlite';
 import bcrypt from "bcrypt";
 
+const cookieParser = require('cookie-parser');
 const SALT_ROUNDS = 10;
 const dbPromise = sqlite.open({
     filename: './data/todolist.db',
