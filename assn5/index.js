@@ -6,181 +6,180 @@ import sqlite3 from 'sqlite3';
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 
-const SALT_ROUNDS = 10;
-const dbPromise = open({
-    filename: './data/todolist.db',
-    driver:sqlite3.Database
-})
 const app = express();
 const port = 6969;
+const SALT_ROUNDS = 10;
 
-app.use(cookieParser())
 
-const authenticationMiddleware = async (req, res, next) => {
-    if (!req.cookies || !req.cookies.authToken) {
-        return next();
-    }
-    const db = await dbPromise;
-    const authToken = await db.get(
-        "SELECT * FROM authtokens WHERE token = ?",
-        req.cookies.authToken
-    );
-    if (!authToken) {
-        return next();
-    }
-    const user = await db.get(
-        "SELECT user_id, username FROM users WHERE user_id = ?",
-        authToken.user_id
-    );
-    req.user = user;
-    next();
-};
-
-app.use(authenticationMiddleware)
-app.use(express.urlencoded())
-// app.use("/static", express.static("./static"));
 app.engine('handlebars',engine());
 app.set('view engine', 'handlebars');
 app.set("views", "./views");
+app.use(express.urlencoded())
+app.use(cookieParser())
+const dbPromise = open({
+    filename: './data/todolist.sqlite',
+    driver:sqlite3.Database
+})
 
 
-
-// renders home handlebars
+// render home
 app.get("/", async (req, res)=>{
+    let logged_in = checkLoginStatus(req);
+    // if not loggedin
+    if(!logged_in)
+        return res.redirect("/login");
+
+    let tasks = []
     const db = await dbPromise;
-    const tasks = await db.all(`
-    SELECT tasks.task_id, tasks.task_desc, tasks.user_id,
-      IIF(tasks.user_id = ?, 1, 0) isByMyself
-    FROM tasks
-    LEFT JOIN users
-    ON users.user_id = tasks.user_id;`,
-        req.users ? req.users.user_id : null);
-    console.log(tasks);
-    res.render("home", { tasks, users: req.users });
+    let authenticationSearch = `SELECT * FROM authtokens WHERE token ="${req.cookies.authToken};"`
+    let authentications = await db.get(authenticationSearch)
+    console.log(authentications)
+    let userId = authentications.user_id;
+
+    // row of tasks
+    let rows = await db.all(`SELECT * FROM tasks WHERE user_id=${userId};`);
+
+    // push tasks into tasks
+    for(let one of rows){
+        tasks.push(one);
+    }
+    let userSearch = `SELECT * FROM users WHERE user_id = ${userId};`
+    let result = await db.get(userSearch)
+    let username = result.username
+
+    // render home
+    return res.render("home",{layout:"main",username:username, tasks:tasks});
+})
+
+app.get("/logout", async (req, res) =>{
+    res.clearCookie("authToken");
+    res.redirect('/')
 })
 
 app.get("/login",(req,res)=>{
-    res.render("login",{layout:"main"})
+    return res.render("login",{layout:"main"})
 })
 
 // renders registration page
 app.get("/register",(req,res)=> {
-    if(req.user){
-        return res.redirect("/")
-    }
-    res.render("register", {layout: "main"})
+    return res.render("register", {layout: "main"})
 })
 
 app.post("/login",async(req,res)=>{
+    if(!req.body.username || !req.body.password)
+    {
+        return res.render("login", {layout: "main",
+            error: "Fill out all fields"});
+    }
+    let username = req.body.username;
+    let password = req.body.password;
     const db = await dbPromise;
-    const{username,password} = req.body
-    if(!username || !password){
-        return res.render("login",{error:"all fields must be filled out"})
+    let search = `SELECT * FROM users WHERE username="${username}";`;
+    let searched = await db.get(search)
+
+    // if user doesnt exist redirect to login page
+    if (!searched) {
+        return res.render("login", {layout: "main",
+            error: "User nonexistent"});
     }
-    try{
-        const user = await db.get("SELECT * FROM users WHERE username=?",username);
-        if(!user){
-            return res.render("login",{ error: "username or password incorrect" })
-        }
-        const passwordMatches = await bcrypt.compare(password, user.passwordHash);
-        if (!passwordMatches) {
-            return res.render("login", { error: "username or password incorrect" });
-        }
-
-        const token = uuidv4();
-
-        await db.run(
-            "INSERT INTO authtokens (token, user_id) VALUES (?, ?);",
-            token,
-            user.user_id
-        );
-        res.cookie("authToken", token);
-    } catch (e) {
-        console.log(e);
-        return res.render("login", { error: "something went wrong" });
+    // compare the password using bcrypt
+    let passwordMatch = await bcrypt.compare(password, searched.password);
+    if(!passwordMatch)
+    {
+        return res.render("login", {layout: "main",
+            error: "Wrong password attempted"});
     }
 
-    res.redirect("/");
+    let userId = searched.user_id;
+    let token = uuidv4();
+
+    let insert = "INSERT INTO authtokens(token, user_id) values (?, ?)";
+    let tokenVal = [token, userId];
+    await db.run(insert, tokenVal);
+    // save the token as a cookie
+    res.cookie("authToken", token);
+    res.redirect('/');
 })
 
 app.post('/register', async (req,res)=>{
-    if (req.user) {
-        return res.redirect("/");
+    if(!req.body.username || !req.body.password || !req.body.passwordx2)
+    {
+        return res.render("register", {layout: "main",
+            error: "Fill out all fields"});
     }
-    const {username,password, passwordx2}=req.body;
+
+    let password = req.body.password;
+    let passwordx2 = req.body.passwordx2;
+    let username = req.body.username;
+
+    if(password != passwordx2)
+    {
+        return res.render("register", {layout: "main",
+            error: "The passwords you entered aren't the same"});
+    }
+
     const db = await dbPromise;
 
+    // check is user exists
+    let search = `SELECT * FROM users WHERE username="${username}";`;
+    let searchResults = await db.get(search)
 
-    if (!username || !password || !passwordx2) {
-        return res.render("register", { error: "all fields are required" });
+    // if user already exists, return register with message saying so
+    if (searchResults) {
+        return res.render("register", {layout: "main",
+            error: "attempted username exists already, try another username"});
     }
-    if (password !== passwordx2) {
-        return res.render("register", { error: "passwords must match" });
-    }
+    // if doesnt return any accounts, create one
+    else {
+        // passwordHash for user
+        let passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+        let insert = "INSERT INTO users(username, password) values (?, ?)";
+        let insertValueList = [username, passwordHash];
+        db.run(insert, insertValueList);
 
-    try {
-        const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-        console.log("passwordHash :", passwordHash);
-        await db.run(
-            "INSERT INTO users (username, passwordHash) VALUES (?, ?)",
-            username,
-            passwordHash
-        );
+        let search = `SELECT * FROM users WHERE username="${username}";`;
+        let searchResults = await db.get(search);
+        let userId = searchResults.user_id;
+        let token = uuidv4();
 
-        const createdUser = await db.get(
-            "SELECT * FROM users WHERE username = ?",
-            username
-        );
+        let insertQuery = "INSERT INTO authtokens(token, user_id) values (?, ?)";
+        let insert_values = [token, userId];
+        await db.run(insertQuery, insert_values);
 
-        const token = uuidv4();
-
-        await db.run(
-            "INSERT INTO authtokens (token, user_id) VALUES (?, ?);",
-            token,
-            createdUser.user_id
-        );
         res.cookie("authToken", token);
+        res.redirect('/');
     }
-    catch (e) {
-        console.log(e);
-        if (
-            e.message === "SQLITE_CONSTRAINT: UNIQUE constraint failed: User.username"
-        ) {
-            return res.render("register", { error: "username already taken" });
-        }
-        return res.render("register", { error: "something went wrong" });
-    }
-
-    res.redirect("/");
 })
 
 app.post("/add_task",async(req,res)=>{
-    if(!req.user){
-        return res.redirect("/")
-    }
-    if(req.body.taskDescription && req.body.length > 500){
-        return res.render("home",{error: "messages must be less than 500 characters"})
-    }
-    const db = await dbPromise
-    await db.run("INSERT INTO tasks(task_desc,user_id) VALUES (?,?)",req.body.taskDescription,req.user.user_id)
+    let task_desc = req.body.taskDescription;
+    const db = await dbPromise;
+
+    // retrieve authtoken from table
+    let authSearch = `SELECT * FROM authtokens WHERE token="${req.cookies.authToken}"`;
+    let authSearchResult = await db.get(authSearch);
+    let userId = authSearchResult.user_id;
+    // add new task
+    let insert= "INSERT INTO tasks(user_id, task_desc, is_complete) values (?, ?, ?)"
+    let insert_values = [userId, task_desc, false];
+    await db.run(insert, insert_values);
     res.redirect("/")
 })
 
-// app.get('/user/:username', async (req, res) => {
-//     const db = await dbPromise;
-//     const user = await db.get("SELECT user_id, username FROM users WHERE username=?", req.params.username)
-//     if (!user) {
-//         return res.send('user not found');
-//     }
-//     const messages = await db.all("SELECT tasks.task_id, tasks.task_desc, users.username as user FROM tasks LEFT JOIN users ON user.user_id = tasks.user_id WHERE authorId=?;", user.user_id)
-//     res.render("profile", { username: req.params.username, messages, user: req.user })
-// })
+// check if the user already signed in
+function checkLoginStatus(request)
+{
+    if(request.cookies)
+        if (request.cookies.authToken)
+            return true;
+    return false;
+}
 
 async function setup(){
     const db = await dbPromise;
-    await db.migrate({force:false});
+    await db.migrate();
     app.listen(6969,()=>{
         console.log("listening on http://localhost:6969")
     });
 }
-await setup();
+setup();
